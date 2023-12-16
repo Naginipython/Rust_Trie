@@ -17,9 +17,19 @@ impl Trie {
     }
 
     pub fn add(&mut self, str: &str) {
-        if str.len() > 0 {
-            let mut char_arr: VecDeque<char> = str.to_lowercase().chars().collect();
+        let mut new_str = String::new();
+        for c in str.to_lowercase().chars() {
+            if c.is_alphabetic() {
+                new_str.push(c);
+            } else if c == '\'' {
+                // purposefully ignored
+            } else {
+                new_str.push(' ');
+            }
+        }
 
+        for word in new_str.split_whitespace() {
+            let mut char_arr: VecDeque<char> = word.chars().collect();
             check_nodes(&mut self.root, &mut char_arr, &mut self.size);
         }
 
@@ -47,6 +57,8 @@ impl Trie {
                     chars.push_front(l);
                     create_nodes(node, chars, size);
                 }
+            } else {
+                node.eow += 1;
             }
         }
     }
@@ -62,6 +74,23 @@ impl Trie {
                 }
             } else {
                 return node.eow > 0;
+            }
+        }
+        let mut char_arr: VecDeque<char> = str.chars().collect();
+        helper(&self.root, &mut char_arr)
+    }
+
+    pub fn find_amount(&self, str: &str) -> u32 {
+        fn helper(node: &Node, chars: &mut VecDeque<char>) -> u32 {
+            if chars.len() > 0 {
+                let l = chars.pop_front().unwrap();
+                if node.children.contains_key(&l) {
+                    return helper(node.children.get(&l).unwrap(), chars);
+                } else {
+                    return 0;
+                }
+            } else {
+                return node.eow;
             }
         }
         let mut char_arr: VecDeque<char> = str.chars().collect();
